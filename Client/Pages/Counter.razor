@@ -1,18 +1,206 @@
 ﻿@page "/counter"
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>Shopping</PageTitle>
 
-<h1>Counter</h1>
+<h1>Inventory</h1>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
 
-<p role="status">Current count: @currentCount</p>
+    th,
+    td {
+        border: 1px solid black;
+        padding: 15px;
+        text-align: center;
+    }
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    th {
+        background-color: #f2f2f2;
+    }
+
+    button {
+        background-color: darkblue;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+    }
+
+    button:hover {
+        background-color: lightblue;
+        color: black;
+    }
+</style>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@ProductItem.Name</td>
+            <td>@ProductItem.Price</td>
+            <td>@ProductItem.Quantity</td>
+            <td><button @onclick="() => AddToCart(ProductItem)">Add to Cart</button></td>
+        </tr>
+        <tr>
+            <td>@ProductItem1.Name</td>
+            <td>@ProductItem1.Price</td>
+            <td>@ProductItem1.Quantity</td>
+            <td><button @onclick="() => AddToCart(ProductItem1)">Add to Cart</button></td>
+        </tr>
+        <tr>
+            <td>@ProductItem2.Name</td>
+            <td>@ProductItem2.Price</td>
+            <td>@ProductItem2.Quantity</td>
+            <td><button @onclick="() => AddToCart(ProductItem2)">Add to Cart</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<h1>Shopping Cart</h1>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 2px solid black;
+        padding: 15px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    button {
+        background-color: darkblue;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+    }
+
+    button:hover {
+        background-color: lightblue;
+        color: black;
+    }
+
+    .remove-button {
+        background-color: red;
+        color: white;
+    }
+
+    button.remove-button:hover {
+        background-color: lightcoral;
+        color: black;
+    }
+</style>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Increase Quantity</th>
+            <th>Decrease Quantity</th>
+            <th>Remove Item</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in ShoppingCartInstance.Products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Price</td>
+                <td>@product.Quantity</td>
+                <td><button ">+</button></td>
+                <td><button >-</button></td>
+                <td><button class="remove-button" @onclick="() => RemoveProduct(product)">X</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>Total Cost: @ShoppingCartInstance.TotalCost</p>
 
 @code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
+    public class Product
     {
-        currentCount++;
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
     }
+
+    public Product ProductItem { get; set; } = new Product { Name = "Laptop", Price = 10000, Quantity = 10 };
+    public Product ProductItem1 { get; set; } = new Product { Name = "Phone", Price = 5000, Quantity = 7 };
+    public Product ProductItem2 { get; set; } = new Product { Name = "Charger", Price = 500, Quantity = 20 };
+
+    public class ShoppingCart
+    {
+
+        public List<Product> Products { get; set; } = new List<Product>();
+        public decimal TotalCost { get; set; }
+
+        public void AddProduct(Product product)
+        {
+            Products.Add(product);
+            TotalCost += product.Price * product.Quantity;
+        }
+
+        public void RemoveProduct(Product product)
+        {
+            Products.Remove(product);
+            TotalCost -= product.Price * product.Quantity;
+        }
+
+        public void UpdateQuantity(Product product, int newQuantity)
+        {
+            TotalCost -= product.Price * product.Quantity;
+            product.Quantity = newQuantity;
+            TotalCost += product.Price * product.Quantity;
+        }
+    }
+
+    public ShoppingCart ShoppingCartInstance { get; set; } = new ShoppingCart();
+
+    void AddToCart(Product product)
+    {
+        // Create a new product with the same details but quantity 1 for the cart
+        var productForCart = new Product { Name = product.Name, Price = product.Price, Quantity = 1 };
+
+        // Add the product to the cart
+        ShoppingCartInstance.AddProduct(productForCart);
+
+        // Decrease the quantity of the product in the inventory by 1
+        product.Quantity -= 1;
+    }
+
+
+
+    void RemoveProduct(Product product)
+    {
+        ShoppingCartInstance.RemoveProduct(product);
+    }
+
 }

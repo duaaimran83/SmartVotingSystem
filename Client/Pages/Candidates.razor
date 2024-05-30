@@ -1,0 +1,72 @@
+﻿@page "/candidates"
+@inject Blazored.Modal.Services.IModalService ModalService
+@inject CandidateService CandidateService
+
+<h3>Candidates</h3>
+<button @onclick="AddCandidate">Add Candidate</button>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Party</th>
+            <th>Election</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var candidate in candidates)
+        {
+                <tr>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Party</td>
+                    <td>@candidate.ElectionID</td>
+                    <td>
+                        <button @onclick="() => EditCandidate(candidate.CandidateID)">Edit</button>
+                        <button @onclick="() => DeleteCandidate(candidate.CandidateID)">Delete</button>
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Candidate> candidates;
+
+    protected override async Task OnInitializedAsync()
+    {
+        candidates = await CandidateService.GetCandidatesAsync();
+    }
+
+    private async Task AddCandidate()
+    {
+        var result = await ModalService.Show<AddEditCandidateModal>("Add Candidate").Result;
+        if (!result.Cancelled)
+        {
+            candidates = await CandidateService.GetCandidatesAsync();
+        }
+    }
+
+    private async Task EditCandidate(int candidateId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(AddEditCandidateModal.CandidateId), candidateId);
+
+        var result = await ModalService.Show<AddEditCandidateModal>("Edit Candidate", parameters).Result;
+        if (!result.Cancelled)
+        {
+            candidates = await CandidateService.GetCandidatesAsync();
+        }
+    }
+
+    private async Task DeleteCandidate(int candidateId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ConfirmDeleteModal.CandidateId), candidateId);
+
+        var result = await ModalService.Show<ConfirmDeleteModal>("Delete Candidate", parameters).Result;
+        if (!result.Cancelled)
+        {
+            candidates = await CandidateService.GetCandidatesAsync();
+        }
+    }
+}

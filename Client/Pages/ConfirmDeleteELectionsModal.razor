@@ -1,0 +1,23 @@
+﻿@inject Blazored.Modal.Services.IModalService ModalService
+@inject CandidateService CandidateService
+
+<p>Are you sure you want to delete this candidate?</p>
+
+<button class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+<button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+
+@code {
+    [Parameter]
+    public int CandidateId { get; set; }
+
+    private async Task ConfirmDelete()
+    {
+        await CandidateService.DeleteCandidateAsync(CandidateId);
+        ModalService.Close(ModalResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        ModalService.Cancel();
+    }
+}

@@ -1,0 +1,28 @@
+﻿@page "/dashboard"
+<h3>Admin Dashboard</h3>
+<div class="dashboard">
+    <div class="card">
+        <h4>Total Voters</h4>
+        <p>@totalVoters</p>
+    </div>
+    <div class="card">
+        <h4>Upcoming Elections</h4>
+        <ul>
+            @foreach (var election in upcomingElections)
+            {
+                    <li>@election.ElectionName - @election.ElectionDate.ToShortDateString()</li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    private int totalVoters;
+    private List<Election> upcomingElections;
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalVoters = await VoterService.GetTotalVotersAsync();
+        upcomingElections = await ElectionService.GetUpcomingElectionsAsync();
+    }
+}

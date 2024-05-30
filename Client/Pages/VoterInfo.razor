@@ -1,0 +1,42 @@
+﻿@page "/voters"
+@inject VoterService VoterService
+
+<h3>Voter Information</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>DOB</th>
+            <th>Address</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Registered</th>
+            <th>Status</th>
+            <th>Has Voted</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var voter in Voters)
+        {
+                <tr>
+                    <td>@voter.Name</td>
+                    <td>@voter.DOB.ToShortDateString()</td>
+                    <td>@voter.Address</td>
+                    <td>@voter.PhoneNumber</td>
+                    <td>@voter.Email</td>
+                    <td>@(voter.Registered ? "Yes" : "No")</td>
+                    <td>@voter.VoterStatus</td>
+                    <td>@(await VoterService.HasVotedAsync(voter.VoterID) ? "Yes" : "No")</td>
+                </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Voter> Voters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Voters = await VoterService.GetVotersAsync();
+    }
+}

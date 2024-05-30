@@ -1,0 +1,68 @@
+﻿@inject Blazored.Modal.Services.IModalService ModalService
+@inject CandidateService CandidateService
+@inject ElectionService ElectionService
+
+<EditForm Model="@candidate" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="candidate.Name" />
+    </div>
+
+    <div class="form-group">
+        <label for="party">Party</label>
+        <InputText id="party" class="form-control" @bind-Value="candidate.Party" />
+    </div>
+
+    <div class="form-group">
+        <label for="election">Election</label>
+        <InputSelect id="election" class="form-control" @bind-Value="candidate.ElectionID">
+            @foreach (var election in elections)
+            {
+                <option value="@election.ElectionID">@election.ElectionName</option>
+            }
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int CandidateId { get; set; }
+
+    private Candidate candidate = new Candidate();
+    private List<Election> elections;
+
+    protected override async Task OnInitializedAsync()
+    {
+        elections = await ElectionService.GetElectionsAsync();
+
+        if (CandidateId != 0)
+        {
+            candidate = await CandidateService.GetCandidateByIdAsync(CandidateId);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (CandidateId == 0)
+        {
+            await CandidateService.AddCandidateAsync(candidate);
+        }
+        else
+        {
+            await CandidateService.UpdateCandidateAsync(candidate);
+        }
+
+        ModalService.Close(ModalResult.Ok(candidate));
+    }
+
+    private void Cancel()
+    {
+        ModalService.Cancel();
+    }
+}

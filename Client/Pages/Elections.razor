@@ -1,0 +1,72 @@
+﻿@page "/elections"
+@inject Blazored.Modal.Services.IModalService ModalService
+@inject ElectionService ElectionService
+
+<h3>Elections</h3>
+<button @onclick="AddElection">Add Election</button>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Election Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var election in elections)
+        {
+                <tr>
+                    <td>@election.ElectionName</td>
+                    <td>@election.ElectionDate.ToShortDateString()</td>
+                    <td>@election.Status</td>
+                    <td>
+                        <button @onclick="() => EditElection(election.ElectionID)">Edit</button>
+                        <button @onclick="() => DeleteElection(election.ElectionID)">Delete</button>
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Election> elections;
+
+    protected override async Task OnInitializedAsync()
+    {
+        elections = await ElectionService.GetElectionsAsync();
+    }
+
+    private async Task AddElection()
+    {
+        var result = await ModalService.Show<AddEditElectionModal>("Add Election").Result;
+        if (!result.Cancelled)
+        {
+            elections = await ElectionService.GetElectionsAsync();
+        }
+    }
+
+    private async Task EditElection(int electionId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(AddEditElectionModal.ElectionId), electionId);
+
+        var result = await ModalService.Show<AddEditElectionModal>("Edit Election", parameters).Result;
+        if (!result.Cancelled)
+        {
+            elections = await ElectionService.GetElectionsAsync();
+        }
+    }
+
+    private async Task DeleteElection(int electionId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ConfirmDeleteModal.ElectionId), electionId);
+
+        var result = await ModalService.Show<ConfirmDeleteModal>("Delete Election", parameters).Result;
+        if (!result.Cancelled)
+        {
+            elections = await ElectionService.GetElectionsAsync();
+        }
+    }
+}
